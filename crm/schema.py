@@ -230,6 +230,7 @@ class Query(graphene.ObjectType):
     products = graphene.List(ProductType)
     orders = graphene.List(OrderType)
 
+
     def resolve_customers(root, info):
         return Customer.objects.all()
 
@@ -238,6 +239,7 @@ class Query(graphene.ObjectType):
 
     def resolve_orders(root, info):
         return Order.objects.all()
+    
 
 
 class Mutation(graphene.ObjectType):
@@ -246,3 +248,23 @@ class Mutation(graphene.ObjectType):
     create_product = CreateProduct.Field()
     create_order = CreateOrder.Field()
 
+
+
+
+class CustomerNode(DjangoObjectType):
+    class Meta:
+        model = Customer
+        filter_fields = {
+            "first_name": ["icontains", "istartswith"],
+            "last_name": ["icontains"],
+            "email": ["icontains"],
+        }
+        interfaces = (graphene.relay.Node,)
+
+
+class Query(graphene.ObjectType):
+    customer = graphene.relay.Node.Field(CustomerNode)
+    all_customers = DjangoFilterConnectionField(CustomerNode)
+
+
+schema = graphene.Schema(query=Query)
